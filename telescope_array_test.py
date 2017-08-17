@@ -95,6 +95,6 @@ def get_button(pin):
     
 if __name__ == "__main__":
     while True:
-        get_button(18)
+        print(get_button(18))
         time.sleep(0.5)
         
