@@ -74,9 +74,9 @@ def main_function():
         time.sleep(0.1) #loops the code every 0.1 seconds
     return None
 
-def get_temperature('pin'):
+def get_temperature(pin):
     '''Returns the temperature - see Adafruit  to figure out how this works'''
-    sensor = Adafruit_DHT.DHT22
+    sensor = Adafruit_DHT.DHT11
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
     return temperature
     
