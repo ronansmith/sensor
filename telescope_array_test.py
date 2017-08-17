@@ -2,10 +2,15 @@ from __future__ import division
 import time
 import numpy as np
 import Adafruit_DHT
+import RPi.GPIO as GPIO
 
 #all telescope positions used are numpy arrays of the form [altitude, azimuth]
 #telescopes 0 to 3 correspond to the real telescopes. Telescope 4 means no telescope is active.
 #Currently in test mode: get sensors retrives a random array and move merely prints the move
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
 def get_sensors():
     '''A function for reading the sensor values.
@@ -79,8 +84,17 @@ def get_temperature(pin):
     sensor = Adafruit_DHT.DHT11
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
     return temperature
+
+def get_button(pin):
+    input_state = GPIO.input(pin)
+    if input_state == False:
+        return 1
+    else:
+        return 0
     
     
 if __name__ == "__main__":
-    get_temperature(23)
+    while True:
+        get_button(18)
+        time.sleep(0.5)
         
