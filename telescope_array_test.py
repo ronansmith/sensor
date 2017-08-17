@@ -3,14 +3,20 @@ import time
 import numpy as np
 import Adafruit_DHT
 import RPi.GPIO as GPIO
+import Adafruit_PCA9685
 
 #all telescope positions used are numpy arrays of the form [altitude, azimuth]
 #telescopes 0 to 3 correspond to the real telescopes. Telescope 4 means no telescope is active.
 #Currently in test mode: get sensors retrives a random array and move merely prints the move
 
+
+#setting up buttons on pins 12 and 18
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+pwm = Adafruit_PCA9685()
+pwm.set_pwm_freq(60)
 
 def get_sensors():
     '''A function for reading the sensor values.
@@ -79,6 +85,7 @@ def main_function():
         time.sleep(0.1) #loops the code every 0.1 seconds
     return None
 
+
 def get_temperature(pin):
     '''Returns the temperature - see Adafruit  to figure out how this works'''
     sensor = Adafruit_DHT.DHT11
@@ -86,15 +93,28 @@ def get_temperature(pin):
     return temperature
 
 def get_button(pin):
+    '''Returns a 1 if the button is pressed '''
     input_state = GPIO.input(pin)
     if input_state == False:
         return 1
     else:
         return 0
-    
+
+def move_servo(pin, degrees):
+    #150 = 0 degrees, 600 = 180
+    '''Moves the servo '''
+    pulse = int(round((degrees*450/180)+150))
+    pwm.set_pwm(pin, 0, pulse)
+
+
     
 if __name__ == "__main__":
     while True:
-        print(get_button(18))
+        i = 10
+        if get_button(12) == 1:
+            i +=10
+        elif get_button(18) ==  1:
+            i -=10
+        move_servo(100, i)
         time.sleep(0.5)
         
