@@ -17,10 +17,12 @@ pins = np.array([11, 12, 18, 23], #telescop 0
                 [1, 1, 1, 1]) #telescope 3
                 
 
-#setting up buttons on pins 12 and 18
+#setting up buttons on the correct pins
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(pins[0,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(pins[1,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(pins[2,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(pins[3,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #setting up the pulse width modulation controller for the servos
 pwm = Adafruit_PCA9685.PCA9685()
