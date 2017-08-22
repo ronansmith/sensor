@@ -156,7 +156,7 @@ def get_sensors(comparitive_values):
     binary_arr = np.zeros((4,3))
     new_comparitive_values = np.zeros((4,2))
     i = 0
-    for i <= 3:        
+    while i <= 3:        
         new_comparitive_values[i,:] = get_temperature_humidity(pins[i,3])
         binary_arr[i,0] = get_button(pins[i,2])
         if new_comparitive_values[i,0] - comparitive_values[i,0] > 2:
