@@ -11,10 +11,10 @@ import Adafruit_PCA9685
 
 #Defining the telescope servo and sensor locations
 # RA, Dec, button, temp/humid
-pins = np.array([4, 5, 18, 25], #telescop 0
+pins = np.array([[4, 5, 18, 25], #telescop 0
                 [6, 7, 12, 23], #telescope 1
                 [8, 9, 13, 22], #telescope 2
-                [10, 11, 6, 24]) #telescope 3
+                [10, 11, 6, 24]]) #telescope 3
                 
 
 #setting up buttons on the correct pins
@@ -42,10 +42,12 @@ def main_function():
     current_telescope = 4 #no telescope is currently active - 4 means no telescope
     track_counter = 0 #counter used for tracking
     
-    binary_values, comparitive_values = get_sensors(np.zeros(2,1)) #temp/humidity values
+    binary_values, comparitive_values = get_sensors(np.zeros((4,2))) #temp/humidity values
+    print(binary_values)
+    print(comparitive_values)
     #temp/humidity are compared to the values measured on startup - consider changing this
     #to values measured every few minutes if code will run for a long time.
-
+    
     #infinite loop - consided putting in break??
     while True:
         new_telescope = find_best_telescope(comparitive_values)
@@ -149,8 +151,9 @@ def get_sensors(comparitive_values):
     The input of compariteve vales is an array of previously measured
     values for comparison. If temperature or humidity have changed by 2
     degrees/percent it will output as triggered.'''
+    print('getting sensors')
     binary_arr = np.zeros((3,1))
-    new_comparitive_values = np.zeros((2,1))
+    new_comparitive_values = np.zeros((4,2))
     i = 0
     for i in range(3):        
         new_comparitive_values[i,:] = get_temperature_humidity(pins[i,3])
