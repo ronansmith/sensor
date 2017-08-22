@@ -11,10 +11,10 @@ import Adafruit_PCA9685
 
 #Defining the telescope servo and sensor locations
 # RA, Dec, button, temp/humid
-pins = np.array([11, 12, 18, 23], #telescop 0
-                [1, 1, 1, 1], #telescope 1
-                [1, 1, 1, 1], #telescope 2
-                [1, 1, 1, 1]) #telescope 3
+pins = np.array([4, 5, 18, 25], #telescop 0
+                [6, 7, 12, 23], #telescope 1
+                [8, 9, 13, 22], #telescope 2
+                [10, 11, 6, 24]) #telescope 3
                 
 
 #setting up buttons on the correct pins
