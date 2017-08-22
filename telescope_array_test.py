@@ -10,19 +10,31 @@ import Adafruit_PCA9685
 
 
 #Defining the telescope servo and sensor locations
-# RA, Dec, button, temp/humid
-pins = np.array([[4, 5, 18, 25], #telescop 0
-                [6, 7, 12, 23], #telescope 1
-                [8, 9, 13, 22], #telescope 2
-                [10, 11, 6, 24]]) #telescope 3
+# RA, Dec, button, temp/humid, Red LED, Green LED,
+pins = np.array([[4, 5, 18, 25, 0, 0], #telescope 0
+                [6, 7, 12, 23, 0, 0], #telescope 1
+                [8, 9, 13, 22, 0, 0], #telescope 2
+                [10, 11, 6, 24, 0, 0]]) #telescope 3
                 
 
 #setting up buttons on the correct pins
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM) #using BCM pin names
+
+#Setting up inputs on buttons
 GPIO.setup(pins[0,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(pins[1,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(pins[2,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(pins[3,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+#setting up outputs for LEDS
+##GPIO.setup(pins[0,4],GPIO.OUT)
+##GPIO.setup(pins[1,4],GPIO.OUT)
+##GPIO.setup(pins[2,4],GPIO.OUT)
+##GPIO.setup(pins[3,4],GPIO.OUT)
+##GPIO.setup(pins[0,5],GPIO.OUT)
+##GPIO.setup(pins[1,5],GPIO.OUT)
+##GPIO.setup(pins[2,5],GPIO.OUT)
+##GPIO.setup(pins[3,5],GPIO.OUT)
 
 #setting up the pulse width modulation controller for the servos
 pwm = Adafruit_PCA9685.PCA9685()
@@ -50,8 +62,8 @@ def main_function():
     
     #infinite loop - consided putting in break??
     while True:
-        new_telescope = find_best_telescope(comparitive_values)
-
+        new_telescope, good_telescopes, bad_telescopes = find_best_telescope(comparitive_values)
+        #update_leds(good_telescopes, bad_telescopes)
         #changing to the new telescope if current telescope has triggered sensor
         if new_telescope != current_telescope:
             move_telescope(current_telescope, park)
@@ -78,16 +90,13 @@ def find_best_telescope(comparitive_values):
     to this telescope. A value of 4 signifies no telescope without a
     triggered sensor exists'''
     sensor_status, unused_comparitives = get_sensors(comparitive_values)
-    if sum(sensor_status[0, :]) < 1:
-        return 0
-    elif sum(sensor_status[1, :]) < 1:
-        return 1
-    elif sum(sensor_status[2, :]) < 1:
-        return 2
-    elif sum(sensor_status[3, :]) < 1:
-        return 3
+    sensor_status_sums = np.sum(sensor_status, axis = 1)
+    good_telescopes = np.where(sensor_status_sums == 0)
+    bad_telescopes = np.where(sensor_status_sums != 0)
+    if len(good_telescopes[0]) > 0:
+        return good_telescopes[0][0], good_telescopes[0], bad_telescopes[0]
     else:
-        return 4
+        return 4, good_telescopes[0], bad_telescopes[0]
 
 
 def get_temperature_humidity(pin):
@@ -168,7 +177,27 @@ def get_sensors(comparitive_values):
     print(new_comparitive_values)
     return binary_arr, new_comparitive_values
 
+def turn_on_off_led(pin, on_off):
+    if on_off == 1:
+        GPIO.output(pin, GPIO.HIGH)
+    else:
+        GPIO.output(pin, GPIO.LOW)
+
+def update_leds(good_telescopes, bad_telescopes):
+    for m in range(len(good_telescopes)):
+        turn_on_off_led(pins[good_telescopes[m],5], 1)
+        turn_on_off_led(pins[good_telescopes[m],4], 0)
+    for n in range(len(bad_telescopes)):
+        turn_on_off_led(pins[good_telescopes[n],4], 1)
+        turn_on_off_led(pins[good_telescopes[n],5], 0)
+
 
 if __name__ == "__main__":
-    main_function()
+    try:
+        main_function()
+    except KeyboardInterrupt:
+        print('Ending Now')
+    finally:
+        print('Running GPIO cleanup')
+        GPIO.cleanip()
         
