@@ -67,7 +67,7 @@ def main_function():
         else:
             track_counter +=1
         
-        time.sleep(1) #sleep for 1 second before looping
+        time.sleep(20) #sleep for 1 second before looping
         
     return True
 
@@ -118,6 +118,7 @@ def get_button(pin):
 def move_telescope(telescope, posn):
     '''A function for moving the selected telescope from
     one position to another'''
+    print('moving telescope %r to %r' % (telescope, posn))
     if telescope <= 3:
         move_servo(pins[telescope, 0], posn[0])
         move_servo(pins[telescope, 1], posn[1])
@@ -152,7 +153,7 @@ def get_sensors(comparitive_values):
     values for comparison. If temperature or humidity have changed by 2
     degrees/percent it will output as triggered.'''
     print('getting sensors')
-    binary_arr = np.zeros((3,1))
+    binary_arr = np.zeros((4,3))
     new_comparitive_values = np.zeros((4,2))
     i = 0
     for i in range(3):        
@@ -163,6 +164,8 @@ def get_sensors(comparitive_values):
         if new_comparitive_values[i,1] - comparitive_values[i,1] > 2:
             binary_arr[i,2] = 1
         i +=1
+    print(binary_arr)
+    print(new_comparitive_values)
     return binary_arr, new_comparitive_values
 
 
