@@ -199,10 +199,10 @@ if __name__ == "__main__":
         print('Ending Now')
     finally:
         print('Moving all to park')
-        move_telescope(0, park)
-        move_telescope(1, park)
-        move_telescope(2, park)
-        move_telescope(3, park)
+        move_telescope(0, np.ones(2))
+        move_telescope(1, np.ones(2))
+        move_telescope(2, np.ones(2))
+        move_telescope(3, np.ones(2))
         print('Running GPIO cleanup')
         GPIO.cleanup()
         
