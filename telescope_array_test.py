@@ -48,7 +48,7 @@ def main_function():
     accordingly'''
 
     #defining the park position and a random target to observe
-    park = np.zeros(2) 
+    park = np.ones(2) 
     telescope_posn = np.array([np.random.randint(30,80), np.random.randint(0,180)])
 
     current_telescope = 4 #no telescope is currently active - 4 means no telescope
@@ -198,6 +198,11 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print('Ending Now')
     finally:
+        print('Moving all to park')
+        move_telescope(0, park)
+        move_telescope(1, park)
+        move_telescope(2, park)
+        move_telescope(3, park)
         print('Running GPIO cleanup')
-        GPIO.cleanip()
+        GPIO.cleanup()
         
