@@ -8,7 +8,6 @@ import Adafruit_PCA9685
 #all telescope positions used are numpy arrays of the form [RA, Dec]
 #telescopes 0 to 3 correspond to the real telescopes. Telescope 4 means no telescope is active.
 
-
 #Defining the telescope servo and sensor locations
 # RA, Dec, button, temp/humid, Red LED, Green LED,
 pins = np.array([[4, 5, 18, 25, 0, 0], #telescope 0
@@ -27,6 +26,7 @@ GPIO.setup(pins[2,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(pins[3,2], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #setting up outputs for LEDS
+#commented out as currently the LEDS aren't all plugged in
 ##GPIO.setup(pins[0,4],GPIO.OUT)
 ##GPIO.setup(pins[1,4],GPIO.OUT)
 ##GPIO.setup(pins[2,4],GPIO.OUT)
@@ -51,19 +51,25 @@ def main_function():
     park = np.ones(2) 
     telescope_posn = np.array([np.random.randint(30,80), np.random.randint(0,180)])
 
+    #setting up the variables that will be used later
     current_telescope = 4 #no telescope is currently active - 4 means no telescope
     track_counter = 0 #counter used for tracking
-    
+
+    #reading the sensor initially to get values for comparison
     binary_values, comparitive_values = get_sensors(np.zeros((4,2))) #temp/humidity values
     print(binary_values)
     print(comparitive_values)
     #temp/humidity are compared to the values measured on startup - consider changing this
     #to values measured every few minutes if code will run for a long time.
     
-    #infinite loop - consided putting in break??
+    #infinite loop 
     while True:
+        #read the sensors and find which telescope can be used
         new_telescope, good_telescopes, bad_telescopes = find_best_telescope(comparitive_values)
+        
+        #uncomment below line when LEDS have been wired in
         #update_leds(good_telescopes, bad_telescopes)
+        
         #changing to the new telescope if current telescope has triggered sensor
         if new_telescope != current_telescope:
             move_telescope(current_telescope, park)
@@ -88,11 +94,18 @@ def find_best_telescope(comparitive_values):
     '''A function for finding the best telescope. The first telescope
     with no triggered sensors is selected. The value returned corresponds
     to this telescope. A value of 4 signifies no telescope without a
-    triggered sensor exists'''
-    sensor_status, unused_comparitives = get_sensors(comparitive_values)
+    triggered sensor exists. An array of all the good telescopes and one for
+    the bad telescopes is also returned.'''
+
+    #sensor status is an array of 1s and 0s for each telescope/sensor. 1 means the sensor has been triggered
+    sensor_status, unused_comparitives = get_sensors(comparitive_values)    
+    #summing to find how many sensors have been triggered on each telescope
     sensor_status_sums = np.sum(sensor_status, axis = 1)
+    #finding the telescopes in the array that have 0 triggered sensors
     good_telescopes = np.where(sensor_status_sums == 0)
+    #finding the telescopes in the array that have a trigered sensor
     bad_telescopes = np.where(sensor_status_sums != 0)
+    #returning the first good telescope if there is one, if not return 4.
     if len(good_telescopes[0]) > 0:
         return good_telescopes[0][0], good_telescopes[0], bad_telescopes[0]
     else:
@@ -178,12 +191,15 @@ def get_sensors(comparitive_values):
     return binary_arr, new_comparitive_values
 
 def turn_on_off_led(pin, on_off):
+    '''A function for turining LEDs on and off. Pin is the GPIO pin that it is attached to,
+    on_off should be set to 1 to turn them on, 0 (or any other number) to turn them off.'''
     if on_off == 1:
         GPIO.output(pin, GPIO.HIGH)
     else:
         GPIO.output(pin, GPIO.LOW)
 
 def update_leds(good_telescopes, bad_telescopes):
+    '''A function for turning on green LEDS in all good telescopes and red LEDS on the bad ones.'''
     for m in range(len(good_telescopes)):
         turn_on_off_led(pins[good_telescopes[m],5], 1)
         turn_on_off_led(pins[good_telescopes[m],4], 0)
@@ -191,6 +207,15 @@ def update_leds(good_telescopes, bad_telescopes):
         turn_on_off_led(pins[good_telescopes[n],4], 1)
         turn_on_off_led(pins[good_telescopes[n],5], 0)
 
+
+#The following code calls the main function (which runs the code) if the file is run directly -
+#(i.e. you run python telescope_array_test.py)
+
+#'try:' runs the code, if an error is found the code under 'finally:' will run - this sets the telescopes
+#to park and turns off the GPIO pins.
+        
+#A keyboard interrupt (ctrl-c) will stop the code and safely shut it down as well - add any other things you
+#want it to do on a normal shudtdown under the 'except:' (the finally: bit will run after this as well)
 
 if __name__ == "__main__":
     try:
